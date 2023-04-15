@@ -12,7 +12,7 @@ def bfs(startState, predictions):
     window.maxsize(1000,800)
     window.minsize(1000,800)
     window.config(bg="orange")
-    GraphTraversal(window)
+    #GraphTraversal(window)
     window.mainloop()
     frontier = collections.deque([(0, startState)])
     print('Initial frontier:',list(frontier))
@@ -49,4 +49,4 @@ def bfs(startState, predictions):
         #print('the frontier now is', list(frontier))
 
 
-print(bfs('b', predictions))
+#print(bfs('b', predictions))

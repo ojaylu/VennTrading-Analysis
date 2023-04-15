@@ -14,14 +14,14 @@ from sklearn import tree
 
 def decisiontree(data):
 
-    #clf = DecisionTreeClassifier(criterion='entropy', splitter='best',max_depth=100,min_samples_split=2,min_samples_leaf=6,min_weight_fraction_leaf=0.0,max_features=None,random_state=42,max_leaf_nodes=None,min_impurity_decrease=0.0)
+    #clf = DecisionTreeClassifier(criterion='gini', splitter='best',max_depth=100,min_samples_split=2,min_samples_leaf=6,min_weight_fraction_leaf=0.0,max_features=None,random_state=42,max_leaf_nodes=None,min_impurity_decrease=0.0)
     clf = DecisionTreeClassifier()
     #clf = KNeighborsClassifier(n_neighbors=5)
     #clf = svm.SVC(probability = True)
 
     data = calc(data)
     #data['RSI_31'].fillna(value=data['RSI_31'].mean(), inplace=True)
-    predictors_list = ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV', 'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD' ]
+    predictors_list = ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV', 'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD', '%k', '%d' ]
     X = data[predictors_list]
     y = data[['prediction']]
 
@@ -32,8 +32,8 @@ def decisiontree(data):
     exp.show_in_notebook(show_table=True, show_all=False)
     #fig = exp.as_pyplot_figure()
     #fig.savefig('lime_report.jpg')
-    dot_data = tree.export_graphviz(clf, out_file=None,filled=True,feature_names=predictors_list)
-    #print(graphviz.Source(dot_data).view())
+    # dot_data = tree.export_graphviz(clf, out_file=None,filled=True,feature_names=predictors_list)
+    # print(graphviz.Source(dot_data).view())
     y_cls_pred = clf.predict(pd.DataFrame(np.array(X_cls_test)))
 
     report = classification_report(y_cls_test, y_cls_pred)

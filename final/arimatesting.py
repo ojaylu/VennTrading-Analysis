@@ -221,7 +221,7 @@ def myarima(data, clf, pred_num, ARIMAstrategy):
         print("here is the strategies suggested by AI")
         x_future_2 = x_future
         x_future_2, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(x_future_2)
-        x_future = x_future.loc[:, ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV', 'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD']]
+        x_future = x_future.loc[:, ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV', 'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD', '%k', '%d']]
         x_future = x_future.fillna(value=x_future['RSI_14'].mean())
         #print('predicted price using ARIMA is ',x_future)
         future_pred = clf.predict(x_future)

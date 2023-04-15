@@ -4,7 +4,7 @@
 # https://github.com/SamarpanCoder2002/Graph-Traversing-Visualizer
 # https://www.kaggle.com/code/kmader/visualizing-graph-traversal
 
-                                      # Graph Traversing #
+
 from tkinter import *
 import time
 
@@ -28,7 +28,7 @@ class GraphTraversal:
         self.make_vertex()
 
     def basic_set_up(self):
-        heading = Label(self.make_canvas,text="Graph Traversing Visualization",bg="chocolate",fg="yellow",font=("Arial",20,"bold","italic"))
+        heading = Label(self.make_canvas,text="The concept behind BFS",bg="chocolate",fg="yellow",font=("Arial",20,"bold","italic"))
         heading.place(x=50,y=10)
 
         bfs_btn = Button(self.window,text="BFS",font=("Arial",15,"bold"),bg="black",fg="green",relief=RAISED,bd=8,command=self.bfs_traversing)

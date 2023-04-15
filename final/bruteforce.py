@@ -59,14 +59,21 @@ def bruteforce(data):
             OBVstrategy = obv_buy_price, obv_sell_price
             EMAstrategy = ema_buy_price, ema_sell_price
 
+    print("the optimized MACD strategy is strategy",strategyID,"Below is the strategy trading details ", MACDstrategy)
+    print("the optimized RSI strategy is strategy",strategyID,"Below is the strategy trading details ", RSIstrategy)
+    print("the optimized OBV strategy is strategy",strategyID,"Below is the strategy trading details ", OBVstrategy)
+    print("the optimized EMA strategy is strategy",strategyID,"Below is the strategy trading details ", EMAstrategy)
+    print("The money you will get using the optimized strategy ",strategyID,"is", highestsurplus)
+    print("However, there may be some cases where the indicators generate contradictory buy/sell signals")
+    print("We need a rules to determine the buy/sell signal combining all indicators, the rule is performed below")
+
     MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, newsurplus = flagrules(
-        data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, strategyID)
+        data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy)
+    
 
     #combineflag = bfs('b', data['close'])
 
     data['prediction'] = combineflag
     data['RSI_14'].fillna(value=data['RSI_14'].mean(), inplace=True)
-
-    print("The money you will get using the optimized strategy",strategyID,"is", highestsurplus)
 
     return data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus

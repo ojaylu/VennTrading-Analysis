@@ -4,8 +4,8 @@ import numpy as np
 #Function to calculate the signal (1: True, 0: False -> Both 0 indicate 'Hold')
 def calc_signal(df, short_days, long_days):
     signal = []
-    ema_buy_price = []
-    ema_sell_price = []
+    ema_buy_price = [0]
+    ema_sell_price = [0]
     short_term = 'EMA'+ str(short_days)
     long_term = 'EMA'+ str(long_days)
     df['Buy'] = 0
@@ -15,11 +15,11 @@ def calc_signal(df, short_days, long_days):
             df['Buy'][i] = 1 #Buy
         elif (df[short_term][i] < df[long_term][i]) and (df[short_term][i-1] >= df[long_term][i-1]):
             df['Sell'][i] = 1 #Sell
-    for i in range(0, len(df['close'])):
-        if (df[short_term][i] > df[long_term][i]) and (df[short_term][i] <= df[long_term][i]):
+    for i in range(1, len(df['close'])):
+        if (df[short_term][i] > df[long_term][i]) and (df[short_term][i-1] <= df[long_term][i-1]):
             ema_buy_price.append(df['close'][i])
             ema_sell_price.append(np.nan)
-        elif (df[short_term][i] < df[long_term][i]) and (df[short_term][i] >= df[long_term][i]):
+        elif (df[short_term][i] < df[long_term][i]) and (df[short_term][i-1] >= df[long_term][i-1]):
             ema_buy_price.append(np.nan)
             ema_sell_price.append(df['close'][i])
         else:

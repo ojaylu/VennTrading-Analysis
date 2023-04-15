@@ -1,6 +1,6 @@
 import math
 
-def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, strategyID):
+def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
     surplus = 0
     MACDflag = []
     RSIflag = []
@@ -45,7 +45,7 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, strateg
     strategy = 'sum'
     if strategy == 'sum':
         combineflag = []
-        for j in range(len(MACDflag)):
+        for j in range(len(EMAflag)):
             if (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j] ) / 4 > 0.1:
                 combineflag.append(1)
             elif (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j]) / 4 < -0.1:
@@ -98,10 +98,6 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, strateg
         elif combineflag[i] ==0:
             surplus = surplus
 
-    print("the optimized MACD strategy is strategy",strategyID,"Below is the strategy trading details ", MACDstrategy)
-    print("the optimized RSI strategy is strategy",strategyID,"Below is the strategy trading details ", RSIstrategy)
-    print("the optimized OBV strategy is strategy",strategyID,"Below is the strategy trading details ", OBVstrategy)
-    print("the optimized EMA strategy is strategy",strategyID,"Below is the strategy trading details ", EMAstrategy)
     print("According to Oscar's method, the buy and sell signal will be ", combineflag)
     print("According to Oscar's method, the surplus will be ", surplus)
     return MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, surplus
