@@ -12,6 +12,10 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from datacollection import *
 import datetime
 
+import io
+import base64
+
+imageList = {}
 def derivation_c(data):
 
     df = data.to_csv('output.csv')
@@ -124,6 +128,15 @@ def arimatesting1(data, history, test, plotderivationgraph):
     plt.plot(pandafuture.index,predictions, label = 'prediction by ARIMA testing of one-time-one-day mode')
     plt.plot(pandafuture.index,test, label = 'testing of ARIMA of one-time-one-day mode')
     plt.legend()
+
+    fig = plt.gcf()
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    dayARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+    fig.clear()
+    imageList['dayARIMA'] = dayARIMA
+
     plt.show()
     print('RMS error: ',error)
     #print('predicted price using ARIMA in testing is ', predictions)
@@ -146,6 +159,15 @@ def arimatestingall(data, history, test, plotderivationgraph):
     plt.plot(pandafuture.index,output, label = 'prediction by ARIMA testing of all-in-once mode')
     plt.plot(pandafuture.index,test, label = 'testing of ARIMA of all-in-once mode')
     plt.legend()
+
+    fig = plt.gcf()
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    allARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+    fig.clear()
+    imageList['allARIMA'] = allARIMA
+
     plt.show()
     print('RMS error: ',error)
     #print('predicted price using ARIMA in testing is ', output)
@@ -243,6 +265,15 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
             future.plot(kind='line',y='high',color='black', ax=ax)
             future.plot(kind='line',y='low',color='orange', ax=ax)
             plt.title('the trend of the predicted price using ARIMA one-in-a-time')
+
+            fig = plt.gcf()
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png')
+            buf.seek(0)
+            dayTrendARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+            fig.clear()
+            imageList['dayTrendARIMA'] = dayTrendARIMA
+
             plt.show()
 
             # h = pd.DataFrame()
@@ -287,6 +318,15 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         plt.scatter(future.index, future['sell price signal'], color = 'green')
         #plt.scatter(x_future.index[x_future['signal' == -1.0]], x_future['signal' == -1.0], color = 'blue', label = 'sell')
         plt.legend()
+
+        fig = plt.gcf()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        BSARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+        fig.clear()
+        imageList['BSARIMA'] = BSARIMA
+
         plt.show()
         print('predicted signal using ARIMA is ',signal)
 
@@ -363,6 +403,15 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         future.plot(kind='line',x='datetime',y='high',color='black', ax=ax)
         future.plot(kind='line', x='datetime',y='low',color='orange', ax=ax)
         plt.title('the trend of the predicted price using ARIMA')
+
+        fig = plt.gcf()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        allDayPriceARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+        fig.clear()
+        imageList['allDayPriceARIMA'] = allDayPriceARIMA
+        
         plt.show()
         
         x_future = calc(future)
@@ -428,9 +477,19 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         plt.scatter(x_future.index, x_future['buy price signal'], color = 'red')
         plt.scatter(x_future.index, x_future['sell price signal'], color = 'green')
         plt.legend()
+
+        fig = plt.gcf()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        allDaysBSARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
+        fig.clear()
+        imageList['allDaysBSARIMA '] = allDaysBSARIMA 
+        
+
         plt.show()
 
         if pred_num <= 22:
-            return bfssignal
+            return bfssignal, imageList
         else:
-            return future_pred
+            return future_pred, imageList

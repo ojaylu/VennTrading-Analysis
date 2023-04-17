@@ -44,8 +44,8 @@ from decisiontree import decisiontree
 plt.style.use('fivethirtyeight')
 plt.rcParams['figure.figsize'] = (20,10)
 
-def main():
-
+def optimize_second():
+    finImgList = {}
     data = datacollection()
 
     # MACD CALCULATION
@@ -62,9 +62,15 @@ def main():
     print('rsi should be ',rsilb, 'to', rsiub)
 
     print("data before AI", data.columns[data.isna().any()])
-    data, clf = decisiontree(data)
+    data, clf, DTimgList = decisiontree(data)
+    finImgList.update(DTimgList)
 
-    mylstm(data, clf, plotbfsgraph=False)
-    myarima(data, clf, 20, 'predict all in once', plotderivationgraph=False, plotbfsgraph=False)
+    xx, LSTMImgList = mylstm(data, clf, plotbfsgraph=False)
+    finImgList.update(LSTMImgList)
 
-main()
+    yy, ARIMAImgList = myarima(data, clf, 20, 'predict all in once', plotderivationgraph=False, plotbfsgraph=False)
+    finImgList.update(ARIMAImgList)
+
+    return {"optimized": {"simple_MACD": { "lower": macdlb , "upper": macdub}, 
+                          "RSI": { "lower": rsilb, "upper": rsiub, "period": 14}},
+            "images": finImgList}
