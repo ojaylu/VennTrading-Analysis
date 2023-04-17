@@ -113,6 +113,12 @@ def bruteforce(data, plotgraph,plotmacdgraph,plotrsigraph,plotobvgraph,plotemagr
             OBVstrategy = obv_buy_price, obv_sell_price
             EMAstrategy = ema_buy_price, ema_sell_price
 
+    
+    ax = plt.gca()
+    plt.cla()
+    brute.plot(kind='line',y='surplus',color='black', ax=ax)
+    plt.title('the distribution of the surplus of different combination')
+    plt.show()
 
     print("the optimized MACD strategy is strategy",strategyID,"Below is the strategy trading details ", MACDstrategy)
     print("the optimized RSI strategy is strategy",strategyID,"Below is the strategy trading details ", RSIstrategy)
@@ -122,8 +128,10 @@ def bruteforce(data, plotgraph,plotmacdgraph,plotrsigraph,plotobvgraph,plotemagr
     print("However, there may be some cases where the indicators generate contradictory buy/sell signals")
     print("We need a rules to determine the buy/sell signal combining all indicators, the rule is performed below")
 
-    MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, newsurplus = flagrules(
-        data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy)
+    flagstrategy = 'sum'
+
+    MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, newsurplus, flagsummary = flagrules(
+        data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, flagstrategy)
     
 
     print('top 20 is', brute['surplus'].idxmax())
@@ -143,4 +151,4 @@ def bruteforce(data, plotgraph,plotmacdgraph,plotrsigraph,plotobvgraph,plotemagr
     data['prediction'] = combineflag
     data['RSI_14'].fillna(value=data['RSI_14'].mean(), inplace=True)
 
-    return data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus
+    return data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus, highestsurplus, strategyID, brute

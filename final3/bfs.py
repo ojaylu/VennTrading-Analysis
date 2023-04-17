@@ -50,4 +50,4 @@ def bfs(startState, predictions, plotbfsgraph):
         #print('the frontier now is', list(frontier))
 
 
-#print(bfs('b', predictions, False))
+#print(bfs('h', predictions, False))

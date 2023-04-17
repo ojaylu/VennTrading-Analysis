@@ -15,10 +15,6 @@ from sklearn.preprocessing import MinMaxScaler
 from datacollection import *
 from itertools import chain
 
-import io
-import base64
-
-imageList = {}
 def lstmingrid(df):
 
     pd.options.mode.chained_assignment = None
@@ -78,20 +74,11 @@ def lstmingrid(df):
 
     # plot the results
     results.plot(title='BTC closing price')
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    predCloseLSTM  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['predCloseLSTM'] = predCloseLSTM
-
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_h(df):
 
@@ -152,20 +139,11 @@ def lstmingrid_h(df):
 
     # plot the results
     results.plot(title='BTC high price')
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    predHighLSTM  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['predHighLSTM '] = predHighLSTM 
-
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_l(df):
 
@@ -226,20 +204,11 @@ def lstmingrid_l(df):
 
     # plot the results
     results.plot(title='BTC low price')
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    predLowLSTM  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['predLowLSTM '] = predLowLSTM 
-
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_v(df):
 
@@ -300,27 +269,18 @@ def lstmingrid_v(df):
 
     # plot the results
     results.plot(title='BTC volume')
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    predVolLSTM  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['predVolLSTM '] = predVolLSTM 
-
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def mylstm(data, clf, plotbfsgraph):
 
-    result_c, x_future_c = lstmingrid(data)
-    result_h, x_future_h = lstmingrid_h(data)
-    result_l, x_future_l = lstmingrid_l(data)
-    result_v, x_future_v = lstmingrid_v(data)
+    result_c, x_future_c, X_c, Y_c = lstmingrid(data)
+    result_h, x_future_h, X_h, Y_h = lstmingrid_h(data)
+    result_l, x_future_l, X_l, Y_l = lstmingrid_l(data)
+    result_v, x_future_v, X_v, Y_v = lstmingrid_v(data)
     x_future = pd.DataFrame()
     x_future['close'] = [tensor.item() for tensor in x_future_c]
     x_future['high'] = [tensor.item() for tensor in x_future_h]
@@ -335,15 +295,6 @@ def mylstm(data, clf, plotbfsgraph):
     x_future.plot(kind='line',y='high',color='black', ax=ax)
     x_future.plot(kind='line', y='low',color='orange', ax=ax)
     plt.title('the predicted price')
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    combinedCLHLSTM = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['combinedCLHLSTM '] = combinedCLHLSTM 
-
     plt.show()
     x_future = calc(x_future)
     print("The prediction of future price using LSTM is \n", x_future)
@@ -356,8 +307,9 @@ def mylstm(data, clf, plotbfsgraph):
 
     else:
         print("Then it will perform brute force using the predicted price by LSTM: ")
-        x_future_2 = x_future
-        x_future_2, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(x_future_2, plotgraph=False,plotmacdgraph=False,
+        x_future_brute = x_future
+        x_future_brute, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus,highestsurplus, strategyID, brute = bruteforce(x_future_brute, 
+                                                                                    plotgraph=False,plotmacdgraph=False,
                                                                                        plotrsigraph=False,
                                                                                        plotobvgraph=False,
                                                                                        plotemagraph=False)
@@ -407,17 +359,9 @@ def mylstm(data, clf, plotbfsgraph):
     plt.scatter(x_future.index, x_future['buy price signal'], color = 'red')
     plt.scatter(x_future.index, x_future['sell price signal'], color = 'green')
     plt.legend()
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    LSTMBSPos = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['LSTMBSPos'] = LSTMBSPos
     plt.show()
 
     if len(x_future_c) <= 22:
-        return bfssignal, imageList
+        return bfssignal, x_future, x_future_brute
     else:
-        return y_cls_pred, imageList
+        return y_cls_pred, x_future, x_future_brute

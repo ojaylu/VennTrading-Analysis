@@ -15,10 +15,6 @@ from sklearn import tree
 import dtreeviz
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import io
-import base64
-
-imageList = {}
 
 def decisiontree(data):
 
@@ -42,16 +38,7 @@ def decisiontree(data):
     #fig.savefig('lime_report.jpg')
     #viz = dtreeviz(clf, X, y,target_name="prediction",feature_names=predictors_list,class_names=[-1,0,1])
     dot_data = tree.export_graphviz(clf, out_file=None,filled=True,feature_names=predictors_list)
-    DTGraph = graphviz.Graph(dot_data,format = 'png')
-
-    #Saving as encoded image
-    buf = io.BytesIO()
-    DTGraph.render(filename='graph', format='png', cleanup=True)
-    buf.seek(0)
-    encodedDTGraph = base64.b64encode(buf.getvalue()).decode('utf-8')
-    imageList['DTGraph'] = encodedDTGraph
-
-    print(encodedDTGraph)
+    print(graphviz.Source(dot_data).view())
     y_cls_pred = clf.predict(pd.DataFrame(np.array(X_cls_test)))
 
     # from matplotlib.colors import ListedColormap
@@ -71,97 +58,41 @@ def decisiontree(data):
     report = classification_report(y_cls_test, y_cls_pred)
     accuracy = accuracy_score(y_cls_test, y_cls_pred)*100
 
-    importances = clf.feature_importances_
-    indices = np.argsort(importances)
-    features = data.columns
-    plt.cla()
-    plt.title('Feature Importances')
-    plt.barh(range(len(indices)), importances[indices], color='g', align='center')
-    plt.yticks(range(len(indices)), [features[i] for i in indices])
-    plt.xlabel('Relative Importance')
-    plt.show()
+    # importances = clf.feature_importances_
+    # indices = np.argsort(importances)
+    # features = data.columns
+    # plt.cla()
+    # plt.title('Feature Importances')
+    # plt.barh(range(len(indices)), importances[indices], color='g', align='center')
+    # plt.yticks(range(len(indices)), [features[i] for i in indices])
+    # plt.xlabel('Relative Importance')
+    # plt.show()
 
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    featImp  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['featImp'] = featImp
+    # cm = confusion_matrix(y_cls_test, y_cls_pred, labels=clf.classes_)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=clf.classes_)
+    # plt.cla()
+    # disp.plot()
+    # plt.show()
+    # class_names = [1, 0,-1]
+    # # disp = ConfusionMatrixDisplay(clf, X_cls_test, y_cls_test, display_labels=class_names)
 
-    cm = confusion_matrix(y_cls_test, y_cls_pred, labels=clf.classes_)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=clf.classes_)
-    plt.cla()
-    disp.plot()
-    plt.show()
+    # explainer = shap.TreeExplainer(clf)
+    # shap_values = explainer.shap_values(X)
 
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    confMat  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['confMat '] = confMat 
-    class_names = [1, 0,-1]
-    # disp = ConfusionMatrixDisplay(clf, X_cls_test, y_cls_test, display_labels=class_names)
+    # shap.summary_plot(shap_values, X.values, plot_type="bar", class_names= class_names, feature_names = X.columns)
+    # shap.summary_plot(shap_values[1], X.values, feature_names = X.columns)
+    # shap.dependence_plot(0, shap_values[0], X.values, feature_names=X.columns)
 
-    explainer = shap.TreeExplainer(clf)
-    shap_values = explainer.shap_values(X)
+    # i=8
+    # shap.force_plot(explainer.expected_value[0], shap_values[0][i], X.values[i], feature_names = X.columns)
 
-    shap.summary_plot(shap_values, X.values, plot_type="bar", class_names= class_names, feature_names = X.columns)
+    # row = 8
+    # shap.waterfall_plot(shap.Explanation(values=shap_values[0][row], base_values=explainer.expected_value[0], data=X_cls_test.iloc[row],  
+    #                                      feature_names=X_cls_test.columns.tolist()))
 
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    featImpBSH  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['featImpBSH'] = featImpBSH
-
-    shap.summary_plot(shap_values[1], X.values, feature_names = X.columns)
-
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    featOpt = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['featOpt'] = featOpt
-
-    shap.dependence_plot(0, shap_values[0], X.values, feature_names=X.columns)
-
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    depPlotEMA = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['depPlotEMA'] = depPlotEMA
-
-    i=8
-    shap.force_plot(explainer.expected_value[0], shap_values[0][i], X.values[i], feature_names = X.columns)
-
-    row = 8
-    shap.waterfall_plot(shap.Explanation(values=shap_values[0][row], base_values=explainer.expected_value[0], data=X_cls_test.iloc[row],  
-                                         feature_names=X_cls_test.columns.tolist()))
-    #Saving as encoded image
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    waterfall = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['waterfall'] = waterfall
-
-    
     print('the prediction by classifier is',y_cls_pred)
     print('the true future signal should be', [x for x in y_cls_test['prediction']])
     print(report)
     print('accuracy score is', accuracy)
 
-    return data, clf, imageList
+    return data, clf, report, accuracy, y_cls_pred, X_cls_train, X_cls_test, y_cls_train, y_cls_test

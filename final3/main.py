@@ -44,8 +44,8 @@ from decisiontree import decisiontree
 plt.style.use('fivethirtyeight')
 plt.rcParams['figure.figsize'] = (20,10)
 
-def optimize_second():
-    finImgList = {}
+def main():
+
     data = datacollection()
 
     # MACD CALCULATION
@@ -57,20 +57,13 @@ def optimize_second():
     data = calc(data)
 
     print("data before bruteforce", data.columns)
-    data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(data,plotgraph=False,plotmacdgraph=False,
+    data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus,highestsurplus, strategyID, brute = bruteforce(data,plotgraph=False,plotmacdgraph=False,
                                                                              plotobvgraph=False, plotrsigraph=False, plotemagraph=False)
-    print('rsi should be ',rsilb, 'to', rsiub)
 
     print("data before AI", data.columns[data.isna().any()])
-    data, clf, DTimgList = decisiontree(data)
-    finImgList.update(DTimgList)
+    data, clf, report, accuracy, y_cls_pred, X_cls_train, X_cls_test, y_cls_train, y_cls_test = decisiontree(data)
 
-    xx, LSTMImgList = mylstm(data, clf, plotbfsgraph=False)
-    finImgList.update(LSTMImgList)
+    #y_cls_pred, x_future, x_future_brute = mylstm(data, clf, plotbfsgraph=False)
+    future_pred, x_future, x_future_2 = myarima(data, clf, 20, 'predict all in once', plotderivationgraph=False, plotbfsgraph=False)
 
-    yy, ARIMAImgList = myarima(data, clf, 20, 'predict all in once', plotderivationgraph=False, plotbfsgraph=False)
-    finImgList.update(ARIMAImgList)
-
-    return {"optimized": {"simple_MACD": { "lower": macdlb , "upper": macdub}, 
-                          "RSI": { "lower": rsilb, "upper": rsiub, "period": 14}},
-            "images": finImgList}
+main()

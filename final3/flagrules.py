@@ -2,7 +2,7 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
+def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, flagstrategy):
     surplus = 0
     MACDflag = []
     RSIflag = []
@@ -56,8 +56,7 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
 
     print('the flag summary', df1)
 
-    strategy = 'sum'
-    if strategy == 'sum':
+    if flagstrategy == 'sum':
         combineflag = []
         for j in range(len(EMAflag)):
             if (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j] ) / 4 > 0.1:
@@ -67,7 +66,7 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
             else:
                 combineflag.append(0)
 
-    elif strategy == 'length':
+    elif flagstrategy == 'length':
         combineflag = []
         buycount = 0
         sellcount = 0
@@ -114,4 +113,4 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
 
     print("According to Oscar's method, the buy and sell signal will be ", combineflag)
     print("According to Oscar's method, the surplus will be ", surplus)
-    return MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, surplus
+    return MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, surplus, df1

@@ -12,10 +12,6 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from datacollection import *
 import datetime
 
-import io
-import base64
-
-imageList = {}
 def derivation_c(data):
 
     df = data.to_csv('output.csv')
@@ -128,15 +124,6 @@ def arimatesting1(data, history, test, plotderivationgraph):
     plt.plot(pandafuture.index,predictions, label = 'prediction by ARIMA testing of one-time-one-day mode')
     plt.plot(pandafuture.index,test, label = 'testing of ARIMA of one-time-one-day mode')
     plt.legend()
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    dayARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['dayARIMA'] = dayARIMA
-
     plt.show()
     print('RMS error: ',error)
     #print('predicted price using ARIMA in testing is ', predictions)
@@ -159,15 +146,6 @@ def arimatestingall(data, history, test, plotderivationgraph):
     plt.plot(pandafuture.index,output, label = 'prediction by ARIMA testing of all-in-once mode')
     plt.plot(pandafuture.index,test, label = 'testing of ARIMA of all-in-once mode')
     plt.legend()
-
-    fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    allARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-    fig.clear()
-    imageList['allARIMA'] = allARIMA
-
     plt.show()
     print('RMS error: ',error)
     #print('predicted price using ARIMA in testing is ', output)
@@ -197,14 +175,14 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
     # X_test_date=data['datetime'][int(0.7*len(X)):]
 
     arimatesting1(data, history_c, test_c, plotderivationgraph)
-    # arimatesting1(data, history_h, test_h, plotderivationgraph)
-    # arimatesting1(data, history_l, test_l, plotderivationgraph)
-    # arimatesting1(data, history_v, test_v, plotderivationgraph)
+    arimatesting1(data, history_h, test_h, plotderivationgraph)
+    arimatesting1(data, history_l, test_l, plotderivationgraph)
+    arimatesting1(data, history_v, test_v, plotderivationgraph)
         
     arimatestingall(data, history_c, test_c, plotderivationgraph)
-    # arimatestingall(data, history_h, test_h, plotderivationgraph)
-    # arimatestingall(data,history_l, test_l, plotderivationgraph)
-    # arimatestingall(data,history_v, test_v, plotderivationgraph)
+    arimatestingall(data, history_h, test_h, plotderivationgraph)
+    arimatestingall(data,history_l, test_l, plotderivationgraph)
+    arimatestingall(data,history_v, test_v, plotderivationgraph)
 
     if ARIMAstrategy == 'predict one in a time':
         signals = np.array([])
@@ -260,21 +238,12 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
             future['low'] = pd.DataFrame(llist)
             future['volume'] = pd.DataFrame(vlist)
 
-            ax = plt.gca()
-            future.plot(kind='line',y='close',color='yellow', ax=ax)
-            future.plot(kind='line',y='high',color='black', ax=ax)
-            future.plot(kind='line',y='low',color='orange', ax=ax)
-            plt.title('the trend of the predicted price using ARIMA one-in-a-time')
-
-            fig = plt.gcf()
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png')
-            buf.seek(0)
-            dayTrendARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-            fig.clear()
-            imageList['dayTrendARIMA'] = dayTrendARIMA
-
-            plt.show()
+            # ax = plt.gca()
+            # future.plot(kind='line',y='close',color='yellow', ax=ax)
+            # future.plot(kind='line',y='high',color='black', ax=ax)
+            # future.plot(kind='line',y='low',color='orange', ax=ax)
+            # plt.title('the trend of the predicted price using ARIMA one-in-a-time')
+            # plt.show()
 
             # h = pd.DataFrame()
             # h['close'] = pd.DataFrame(history_c)
@@ -311,6 +280,10 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         future['buy price signal'] = pd.DataFrame(buy)
         future['sell price signal'] = pd.DataFrame(sell)
 
+        plt.cla()
+        data.index = pd.to_datetime(data.index)
+        future['datetime'] = pd.date_range(start=data.index[-1] + pd.Timedelta(days=1), periods=pred_num)
+        future = future.set_index('datetime')
 
         plt.figure(figsize=(15,8))
         plt.plot(future.index, future['close'])
@@ -318,17 +291,10 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         plt.scatter(future.index, future['sell price signal'], color = 'green')
         #plt.scatter(x_future.index[x_future['signal' == -1.0]], x_future['signal' == -1.0], color = 'blue', label = 'sell')
         plt.legend()
-
-        fig = plt.gcf()
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png')
-        buf.seek(0)
-        BSARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-        fig.clear()
-        imageList['BSARIMA'] = BSARIMA
-
         plt.show()
-        print('predicted signal using ARIMA is ',signal)
+        print('predicted signal using ARIMA is ',signals)
+
+        return signals, future, future
 
     elif ARIMAstrategy == 'predict all in once':
 
@@ -343,7 +309,6 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
             plt.show()
         x_future = model_fit.forecast(pred_num)
         x_future = [x for x in x_future]
-        print('pred_num is ', pred_num)
         if pred_num <= 22:
             bfsfuture, bfsfinal, bfsfrontier = bfs('b',x_future, plotbfsgraph=plotbfsgraph)
             print('predicted signal using bfs is ', bfsfuture[1])
@@ -403,21 +368,12 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         future.plot(kind='line',x='datetime',y='high',color='black', ax=ax)
         future.plot(kind='line', x='datetime',y='low',color='orange', ax=ax)
         plt.title('the trend of the predicted price using ARIMA')
-
-        fig = plt.gcf()
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png')
-        buf.seek(0)
-        allDayPriceARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-        fig.clear()
-        imageList['allDayPriceARIMA'] = allDayPriceARIMA
-        
         plt.show()
         
         x_future = calc(future)
         print("here is the strategies suggested by bruteforce")
         x_future_2 = x_future
-        x_future_2, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(x_future_2,plotgraph=False,
+        x_future_2, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus, highestsurplus, strategyID, brute = bruteforce(x_future_2,plotgraph=False,
                                                                                        plotmacdgraph=False,
                                                                                        plotrsigraph=False,
                                                                                        plotobvgraph=False,
@@ -477,19 +433,9 @@ def myarima(data, clf, pred_num, ARIMAstrategy, plotderivationgraph, plotbfsgrap
         plt.scatter(x_future.index, x_future['buy price signal'], color = 'red')
         plt.scatter(x_future.index, x_future['sell price signal'], color = 'green')
         plt.legend()
-
-        fig = plt.gcf()
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png')
-        buf.seek(0)
-        allDaysBSARIMA  = base64.b64encode(buf.getvalue()).decode('utf-8')
-        fig.clear()
-        imageList['allDaysBSARIMA '] = allDaysBSARIMA 
-        
-
         plt.show()
 
         if pred_num <= 22:
-            return bfssignal, imageList
+            return (bfsfuture, bfsfinal, bfsfrontier), x_future, x_future_2
         else:
-            return future_pred, imageList
+            return future_pred, x_future, x_future_2
