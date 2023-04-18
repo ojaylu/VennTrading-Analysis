@@ -1,7 +1,8 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
-def rsi_buy_sell(signal, col1, col2):
+def rsi_buy_sell(signal, col1, col2, plotrsigraph):
     signPriceBuy = []
     signPriceSell = []
     flag = -1
@@ -23,4 +24,12 @@ def rsi_buy_sell(signal, col1, col2):
     newsignPriceBuy = [item for item in signPriceBuy if not(math.isnan(item)) == True]
     newsignPriceSell = [item for item in signPriceSell if not(math.isnan(item)) == True]
     surplus = sum(newsignPriceSell) - sum(newsignPriceBuy)
+    if plotrsigraph == True:
+        plotRSIPriceBuy = [0 if math.isnan(x) else x for x in signPriceBuy]
+        plotRSIPriceSell = [0 if math.isnan(x) else x for x in signPriceSell]
+        plt.plot(plotRSIPriceBuy, label = 'rsi sell price')
+        plt.plot(plotRSIPriceSell, label = 'rsi sell price')
+        plt.title('RSI buying/selling price after strategy: if the signal of lower bound is 1 while upper bound signal is 0, a buy signal will be generated. if the signal of lower bound is 0 while upper bound signal is 1, a sell signal will be generated')
+        plt.legend()
+        plt.show()
     return (signPriceBuy, signPriceSell)

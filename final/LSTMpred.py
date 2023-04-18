@@ -73,12 +73,12 @@ def lstmingrid(df):
     results = df_past.append(df_future).set_index('datetime')
 
     # plot the results
-    results.plot(title='BTC')
+    results.plot(title='BTC closing price')
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_h(df):
 
@@ -138,12 +138,12 @@ def lstmingrid_h(df):
     results = df_past.append(df_future).set_index('datetime')
 
     # plot the results
-    results.plot(title='BTC')
+    results.plot(title='BTC high price')
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_l(df):
 
@@ -203,12 +203,12 @@ def lstmingrid_l(df):
     results = df_past.append(df_future).set_index('datetime')
 
     # plot the results
-    results.plot(title='BTC')
+    results.plot(title='BTC low price')
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
 def lstmingrid_v(df):
 
@@ -268,40 +268,55 @@ def lstmingrid_v(df):
     results = df_past.append(df_future).set_index('datetime')
 
     # plot the results
-    results.plot(title='BTC')
+    results.plot(title='BTC volume')
     future = list(chain.from_iterable(Y_))
 
     #print(results['Forecast'].to_markdown())
 
-    return results, future
+    return results, future, X, Y
 
-def mylstm(data, clf):
+def mylstm(data, clf, plotbfsgraph):
 
-    result_c, x_future_c = lstmingrid(data)
-    result_h, x_future_h = lstmingrid_h(data)
-    result_l, x_future_l = lstmingrid_l(data)
-    result_v, x_future_v = lstmingrid_v(data)
+    result_c, x_future_c, X_c, Y_c = lstmingrid(data)
+    result_h, x_future_h, X_h, Y_h = lstmingrid_h(data)
+    result_l, x_future_l, X_l, Y_l = lstmingrid_l(data)
+    result_v, x_future_v, X_v, Y_v = lstmingrid_v(data)
     x_future = pd.DataFrame()
     x_future['close'] = [tensor.item() for tensor in x_future_c]
     x_future['high'] = [tensor.item() for tensor in x_future_h]
     x_future['low'] = [tensor.item() for tensor in x_future_l]
     x_future['volume'] = [tensor.item() for tensor in x_future_v]
+    # Get current axis
+    plt.cla()
+    ax = plt.gca()
+    data.index = pd.to_datetime(data.index)
+    x_future['datetime'] = pd.date_range(start=data.index[-1] + pd.Timedelta(days=1), periods=len(x_future_c))
+    x_future.plot(kind='line',y='close',color='yellow', ax=ax)
+    x_future.plot(kind='line',y='high',color='black', ax=ax)
+    x_future.plot(kind='line', y='low',color='orange', ax=ax)
+    plt.title('the predicted price')
+    plt.show()
     x_future = calc(x_future)
     print("The prediction of future price using LSTM is \n", x_future)
 
 
     if len(x_future_c) < 22:
         print("since the prediction period is not too long, BFS will be used to generate buy/sell signal")
-        bfsfuture = bfs('b', x_future_c)
+        bfsfuture, bfsfinal, bfsfrontier = bfs('b', x_future_c, plotbfsgraph=plotbfsgraph)
         bfssignal = bfsfuture[1]
 
     else:
         print("Then it will perform brute force using the predicted price by LSTM: ")
-        x_future_2 = x_future
-        x_future_2, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(x_future_2)
+        x_future_brute = x_future
+        x_future_brute, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus,highestsurplus, strategyID, brute = bruteforce(x_future_brute, 
+                                                                                    plotgraph=False,plotmacdgraph=False,
+                                                                                       plotrsigraph=False,
+                                                                                       plotobvgraph=False,
+                                                                                       plotemagraph=False, 
+                                                                                       plotpsargraph=False)
         print("now these list of buy/sell signal will be the standard signal.")
         print("Then we will use the ML classifier to generate buy/sell signal using the same data predicted by LSTM")
-        x_future = x_future.loc[:, ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV', 'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD', '%k', '%d']]
+        x_future = x_future.loc[:, ['close', 'RSI_14', 'EMA10', 'EMA30', 'macd','OBV','PSAR' ,'ATR','ClgtEMA10', 'EMA10gtEMA30', 'MACDSIGgtMACD', '%k', '%d']]
         x_future = x_future.fillna(value=x_future['RSI_14'].mean())
         y_cls_pred = clf.predict(x_future)
         print('According to the ML classifier, the buy/sell signal corresponding to future price is ', y_cls_pred)
@@ -310,10 +325,10 @@ def mylstm(data, clf):
     buy = []
     if len(x_future_c) <= 22:
         for i in range(len(bfssignal)):
-            if bfssignal[i] == 1:
+            if bfsfinal[i] == 1:
                 buy.append(x_future['close'][i])
                 sell.append(nan)
-            elif bfssignal[i] == -1:
+            elif bfsfinal[i] == -1:
                 buy.append(nan)
                 sell.append(x_future['close'][i])
             else:
@@ -335,15 +350,22 @@ def mylstm(data, clf):
         x_future['buy price signal'] = pd.DataFrame(buy)
         x_future['sell price signal'] = pd.DataFrame(sell)
 
+    plt.cla()
+    data.index = pd.to_datetime(data.index)
+    if len(x_future_c) <= 22:
+        x_future['datetime'] = pd.date_range(start=data.index[-1] + pd.Timedelta(days=1), periods=len(bfssignal))
+    else:
+         x_future['datetime'] = pd.date_range(start=data.index[-1] + pd.Timedelta(days=1), periods=len(y_cls_pred))
+    x_future = x_future.set_index('datetime')
+
     plt.figure(figsize=(15,8))
     plt.plot(x_future.index, x_future['close'])
     plt.scatter(x_future.index, x_future['buy price signal'], color = 'red')
     plt.scatter(x_future.index, x_future['sell price signal'], color = 'green')
-    #plt.scatter(x_future.index[x_future['signal' == -1.0]], x_future['signal' == -1.0], color = 'blue', label = 'sell')
     plt.legend()
     plt.show()
 
     if len(x_future_c) <= 22:
-        return bfssignal
+        return bfssignal, x_future, x_future_brute
     else:
-        return y_cls_pred
+        return y_cls_pred, x_future, x_future_brute

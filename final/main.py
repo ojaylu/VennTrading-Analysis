@@ -57,12 +57,14 @@ def main():
     data = calc(data)
 
     print("data before bruteforce", data.columns)
-    data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus = bruteforce(data)
+    data, combineflag, macdlb, macdub, rsilb, rsiub, newsurplus,highestsurplus, strategyID, brute = bruteforce(data,plotgraph=False,plotmacdgraph=False,
+                                                        plotobvgraph=False, plotrsigraph=False, plotemagraph=False, plotpsargraph=False)
 
     print("data before AI", data.columns[data.isna().any()])
-    data, clf = decisiontree(data)
+    data, clf, report, accuracy, y_cls_pred, X_cls_train, X_cls_test, y_cls_train, y_cls_test = decisiontree(data)
 
-    #mylstm(data, clf)
-    #myarima(data, clf, 20, 'predict all in once')
+    y_cls_pred, x_future, x_future_brute = mylstm(data, clf, plotbfsgraph=False)
+    future_pred, x_future, x_future_2 = myarima(data, clf, 20, 'predict all in once', plotderivationgraph=False, plotbfsgraph=False)
+    future_pred, x_future, x_future_2 = myarima(data, clf, 20, 'predict one in a time', plotderivationgraph=False, plotbfsgraph=False)
 
 main()

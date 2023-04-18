@@ -1,11 +1,14 @@
 import math
+import pandas as pd
+import matplotlib.pyplot as plt
 
-def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
+def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, PSARstrategy,flagstrategy):
     surplus = 0
     MACDflag = []
     RSIflag = []
     OBVflag = []
     EMAflag = []
+    PSARflag = []
     macd_buy_price = MACDstrategy[0]
     macd_sell_price = MACDstrategy[1]
     rsi_buy_price = RSIstrategy[0]
@@ -14,6 +17,8 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
     obv_sell_price = OBVstrategy[1]
     ema_buy_price = EMAstrategy[0]
     ema_sell_price = EMAstrategy[1]
+    psar_buy_price = PSARstrategy[0]
+    psar_sell_price = PSARstrategy[1]
     for j in range(len(macd_buy_price)):
         if math.isnan(macd_buy_price[j]) == False:
             MACDflag.append(1)
@@ -42,18 +47,37 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
             EMAflag.append(-1)
         else:
             EMAflag.append(0)
-    strategy = 'sum'
-    if strategy == 'sum':
+    for j in range(len(psar_buy_price)):
+        if math.isnan(psar_buy_price[j]) == False:
+            PSARflag.append(1)
+        elif math.isnan(psar_sell_price[j]) == False:
+            PSARflag.append(-1)
+        else:
+            PSARflag.append(0)
+
+    df1 = pd.DataFrame({'macd flag':MACDflag,'rsi flag':RSIflag,'obv flag':OBVflag,'ema flag':EMAflag, 'psar flag':PSARflag})
+    df1json = df1.to_json(orient = 'columns')
+    ax = plt.gca()
+    df1.plot(kind='line',y='macd flag',color='yellow', ax=ax)
+    df1.plot(kind='line',y='rsi flag',color='blue', ax=ax)
+    df1.plot(kind='line',y='obv flag',color='red', ax=ax)
+    df1.plot(kind='line',y='ema flag',color='green', ax=ax)
+    df1.plot(kind='line',y='psar flag',color='green', ax=ax)
+    plt.title('the flag of each indicator according to flag rules')
+
+    print('the flag summary', df1)
+
+    if flagstrategy == 'sum':
         combineflag = []
         for j in range(len(EMAflag)):
-            if (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j] ) / 4 > 0.1:
+            if (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j] + PSARflag[j] ) / 5 > 0.1:
                 combineflag.append(1)
-            elif (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j]) / 4 < -0.1:
+            elif (MACDflag[j] + RSIflag[j] + OBVflag[j] + EMAflag[j]+ PSARflag[j]) / 5 < -0.1:
                 combineflag.append(-1)
             else:
                 combineflag.append(0)
 
-    elif strategy == 'length':
+    elif flagstrategy == 'length':
         combineflag = []
         buycount = 0
         sellcount = 0
@@ -83,6 +107,12 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
                 sellcount+=1
             else:
                 holdcount+=1
+            if PSARflag[j] == 1:
+                buycount+=1
+            elif PSARflag[j] == -1:
+                sellcount+=1
+            else:
+                holdcount+=1
             if buycount > sellcount and buycount >= holdcount:
                 combineflag.append(1)
             elif sellcount > buycount and sellcount >= holdcount:
@@ -100,4 +130,4 @@ def flagrules(data, MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy):
 
     print("According to Oscar's method, the buy and sell signal will be ", combineflag)
     print("According to Oscar's method, the surplus will be ", surplus)
-    return MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, combineflag, data, surplus
+    return MACDstrategy, RSIstrategy, OBVstrategy, EMAstrategy, PSARstrategy,combineflag, data, surplus, df1

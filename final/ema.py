@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 #Function to calculate the signal (1: True, 0: False -> Both 0 indicate 'Hold')
-def calc_signal(df, short_days, long_days):
+def calc_signal(df, short_days, long_days, plotemagraph):
     signal = []
     ema_buy_price = [0]
     ema_sell_price = [0]
@@ -25,6 +26,15 @@ def calc_signal(df, short_days, long_days):
         else:
             ema_buy_price.append(np.nan)
             ema_sell_price.append(np.nan)
+
+    if plotemagraph == True:
+        plotEMAPriceBuy = [0 if math.isnan(x) else x for x in ema_buy_price]
+        plotEMAPriceSell = [0 if math.isnan(x) else x for x in ema_sell_price]
+        plt.plot(plotEMAPriceBuy, label = 'ema sell price')
+        plt.plot(plotEMAPriceSell, label = 'ema sell price')
+        plt.title('EMA buying/selling price after strategy: \n if the ema10 is greater than ema30 while on the next day ema10 is smaller than ema30, a buy signal will be generated. \n if the ema10 is smaller than ema30 while on the next day ema10 is greater than ema30, a sell signal will be generated.')
+        plt.legend()
+        plt.show()
 
 
     return df, signal, ema_buy_price, ema_sell_price

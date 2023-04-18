@@ -6,6 +6,7 @@ from obv import *
 from implement_stoch_macd_strategy_optimization import *
 from stochastic import *
 from pandas import Series, datetime
+from psar import *
 
 def calc(data):
 
@@ -49,5 +50,8 @@ def calc(data):
         data['ATR'].fillna(value=0, inplace=True)
 
     OBVcalculation(data)
+    psar(data, plotpsargraph=False)
+
     data = data.fillna(value=np.nan)
+
     return data

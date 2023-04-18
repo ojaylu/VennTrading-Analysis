@@ -1,7 +1,8 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
-def implement_stoch_macd_strategy_optimization(prices, k, d, macd, macd_signal, lb, ub):    
+def implement_stoch_macd_strategy_optimization(prices, k, d, macd, macd_signal, lb, ub, plotmacdgraph):    
         buy_price = []
         sell_price = []
         stoch_macd_signal = []
@@ -34,6 +35,14 @@ def implement_stoch_macd_strategy_optimization(prices, k, d, macd, macd_signal, 
                 buy_price.append(np.nan)
                 sell_price.append(np.nan)
                 stoch_macd_signal.append(0)
+        if plotmacdgraph == True:
+            plotMACDPriceBuy = [0 if math.isnan(x) else x for x in buy_price]
+            plotMACDriceSell = [0 if math.isnan(x) else x for x in sell_price]
+            plt.plot(plotMACDPriceBuy, label = 'macd sell price')
+            plt.plot(plotMACDriceSell, label = 'macd sell price')
+            plt.title('MACD buying/selling price after strategy: ')
+            plt.legend()
+            plt.show()
                 
         return buy_price, sell_price, stoch_macd_signal
 

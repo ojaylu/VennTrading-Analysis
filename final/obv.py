@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import math
 
 
 #Calculate the On Balance Volume (OBV)
@@ -21,7 +23,7 @@ def OBVcalculation(data):
 
     return data
 
-def OBV_buy_sell(signal, col1, col2):
+def OBV_buy_sell(signal, col1, col2, plotobvgraph):
     signPriceBuy = []
     signPriceSell = []
     flag = -1
@@ -40,5 +42,14 @@ def OBV_buy_sell(signal, col1, col2):
         else:
             signPriceSell.append(np.nan)
             signPriceBuy.append(np.nan)
+    
+    if plotobvgraph == True:
+        plotOBVPriceBuy = [0 if math.isnan(x) else x for x in signPriceBuy]
+        plotOBVPriceSell = [0 if math.isnan(x) else x for x in signPriceSell]
+        plt.plot(plotOBVPriceBuy, label = 'obv sell price')
+        plt.plot(plotOBVPriceSell, label = 'obv sell price')
+        plt.title('OBV buying/selling price after strategy: if OBV is greater than OBV_EMA, a buy signal will be generated. if OBV is smaller than OBV_EMA, a sell signal will be generated. ')
+        plt.legend()
+        plt.show()
     
     return (signPriceBuy, signPriceSell)
